@@ -1,9 +1,7 @@
 # Minikub-ArGoCD-Istio-AWS
 Documenting the setup of Minikube + ArgoCD + Istio + Sample App on an AWS EC2 Ubuntu instance using Terraform and manual provisioning:
 
-markdown
-Copy
-Edit
+
 # 🚀 Minikube + ArgoCD + Istio + Bookinfo App on AWS EC2 (Ubuntu)
 
 This project sets up a local Kubernetes cluster using Minikube, deploys ArgoCD for GitOps, installs Istio for service mesh, and runs the Bookinfo sample app — all on an AWS EC2 Ubuntu instance.
@@ -46,9 +44,7 @@ resource "aws_instance" "minikube" {
     Name = "minikube-vm"
   }
 }
-hcl
-Copy
-Edit
+
 # variables.tf
 variable "key_name" {
   default = "minikube-key"
@@ -61,14 +57,10 @@ output "public_ip" {
   value = aws_instance.minikube.public_ip
 }
 🚪 Connect to EC2 Instance
-bash
-Copy
-Edit
+
 ssh -i my-aws-key.pem ubuntu@<EC2_PUBLIC_IP>
 🐳 Install Docker
-bash
-Copy
-Edit
+
 sudo apt update
 sudo apt install -y docker.io
 sudo systemctl start docker
@@ -76,23 +68,17 @@ sudo systemctl enable docker
 sudo usermod -aG docker ubuntu
 newgrp docker
 🔧 Install Minikube
-bash
-Copy
-Edit
+
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 sudo install minikube-linux-amd64 /usr/local/bin/minikube
 ⎈ Install kubectl
-bash
-Copy
-Edit
+
 curl -LO https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
 kubectl version --client
 ⚙️ Install cri-dockerd and CNI Plugins
-bash
-Copy
-Edit
+
 # cri-dockerd
 sudo apt install -y git golang-go
 git clone https://github.com/Mirantis/cri-dockerd.git
@@ -112,81 +98,57 @@ sudo tar -xzvf cni-plugins-linux-amd64-v1.1.1.tgz -C /opt/cni/bin
 # socat for port-forwarding
 sudo apt install -y socat
 🚀 Start Minikube
-bash
-Copy
-Edit
+
 minikube start --driver=none
 ✅ Validate Cluster
-bash
-Copy
-Edit
+
 kubectl get nodes
 kubectl get pods -A
 🎯 Deploy ArgoCD
-bash
-Copy
-Edit
+
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 🔑 Get ArgoCD Credentials
-bash
-Copy
-Edit
+
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 🌍 Access ArgoCD UI
-bash
-Copy
-Edit
+
 kubectl port-forward --address 0.0.0.0 svc/argocd-server -n argocd 8080:443
 Visit: http://<EC2_PUBLIC_IP>:8080
 Username: admin
 Password: (as fetched above)
 
 📦 Install Istio
-bash
-Copy
-Edit
+
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.22.0 sh -
 cd istio-1.22.0
 sudo cp bin/istioctl /usr/local/bin/
 Pre-check and install:
-bash
-Copy
-Edit
+
 istioctl x precheck
 istioctl install --set profile=demo -y
 🧪 Deploy Bookinfo Sample App
-bash
-Copy
-Edit
+
 kubectl label namespace default istio-injection=enabled
 kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
 kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
 🌐 Access the App
 Get Istio ingress port:
 
-bash
-Copy
-Edit
+
 kubectl get svc -n istio-system istio-ingressgateway
 Get EC2 public IP:
 
-bash
-Copy
-Edit
 curl http://checkip.amazonaws.com
 Access the app:
 
 php-template
-Copy
-Edit
+
 http://<EC2_PUBLIC_IP>:<NODEPORT>/productpage
 (Example: http://3.110.183.208:30221/productpage)
 
 📋 Useful Commands
-bash
-Copy
-Edit
+
 # Check all pods and services
 kubectl get pods -A
 kubectl get svc -A
